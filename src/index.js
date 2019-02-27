@@ -1,43 +1,43 @@
 const { GraphQLServer } = require('graphql-yoga')
-
-// In-memory. TODO: store in database.
-let links = [{
-  id: 'link-0',
-  url: 'www.howtographql.com',
-  description: 'Fullstack tutorial for GraphQL'
-}]
-
-let idCount = links.length // to generate unique ID
+const { prisma } = require('./generated/prisma-client')
 
 // all fields for type have resolver
 // Every GraphQL resolver function actually receives four input arguments: 
-// 1. parent/root
-// 2. args
+// 1. parent/root: from previous level of query
+// 2. args: arugments passed from query
+// 3. context
+// 4. info
 const resolvers = {
   Query: {
     info: () => `This is the API of a Hackernews Clone`,
-    feed: () =>  links,
-    link: (parent, args) => links.find(link => link.id === args.id)
+    feed: (parent, args, context, info) => {
+      return context.prisma.links()
+    },
+    link: (parent, args, context, info) => {
+      const links = context.prisma.links()
+      return links.find(link => link.id === args.id)
+    }
   },
   Mutation: {
-    post: (parent, args) => {
+    post: (parent, args, context, info) => {
       // create new link object
-      const link = {
-        id: `link-${idCount++}`,
+      return context.prisma.createLink({
         description: args.description,
         url: args.url
-      }
-      links.push(link)
-      return link
+      })
     },
-    updateLink: (parent, args) => {
-      const index = links.findIndex(link => link.id === args.id)
+    updateLink: (parent, args, context, info) => {
+      const links = context.prisma.links()
+      // TODO. Not working
+      const index = context.prisma.findIndex(link => link.id === args.id)
       if (args.description) links[index].description = args.description
       if (args.url) links[index].url = args.url
       return links[index]
     },
     deleteLink: (parent, args) => {
-      const index = links.findIndex(link => link.id === args.id)
+      const links = context.prisma.links()
+      // TODO. Not working
+      const index = context.prisma.findIndex(link => link.id === args.id)
       if (index > -1) {
         const removedLink = links[index]
         links.splice(index, 1)
@@ -55,7 +55,8 @@ const resolvers = {
 
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
-  resolvers
+  resolvers,
+  context: { prisma }
 })
 
 server.start(() => console.log(`Server is running on http://localhost:4000`))

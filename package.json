@@ -12,6 +12,7 @@
   "dependencies": {
     "global": "^4.3.2",
     "graphql-yoga": "^1.17.4",
-    "prisma": "^1.27.3"
+    "prisma": "^1.27.3",
+    "prisma-client-lib": "^1.27.3"
   }
 }
