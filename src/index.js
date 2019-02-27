@@ -4,6 +4,8 @@ const Query = require('./resolvers/Query')
 const Mutation = require('./resolvers/Mutation')
 const User = require('./resolvers/User')
 const Link = require('./resolvers/Link')
+const Subscription = require('./resolvers/Subscription')
+const Vote = require('./resolvers/Vote')
 
 // all fields for type have resolver
 // Every GraphQL resolver function actually receives four input arguments: 
@@ -14,8 +16,10 @@ const Link = require('./resolvers/Link')
 const resolvers = {
   Query,
   Mutation,
+  Subscription,
   User,
-  Link
+  Link,
+  Vote
 }
 
 const server = new GraphQLServer({
