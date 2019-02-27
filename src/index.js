@@ -1,18 +1,5 @@
 const { GraphQLServer } = require('graphql-yoga')
 
-const typeDefs = `
-type Query {
-  info: String!
-  feed: [Link!]!
-}
-
-type Link {
-  id: ID!
-  description: String!
-  url: String!
-}
-`
-
 // In-memory. TODO: store in database.
 let links = [{
   id: 'link-0',
@@ -20,13 +7,30 @@ let links = [{
   description: 'Fullstack tutorial for GraphQL'
 }]
 
+let idCount = links.length // to generate unique ID
+
 // all fields for type have resolver
-// Every GraphQL resolver function actually receives four input arguments: parent/root, 
+// Every GraphQL resolver function actually receives four input arguments: 
+// 1. parent/root
+// 2. args
 const resolvers = {
   Query: {
     info: () => `This is the API of a Hackernews Clone`,
     feed: () =>  links
   },
+  Mutation: {
+    post: (parent, args) => {
+      // create new link object
+      const link = {
+        id: `link-${idCount++}`,
+        description: args.description,
+        url: args.url
+      }
+      links.push(link)
+      return link
+    }
+  },
+  // Link resolvers not needed because GraphQL infers from type
   Link: {
     id: (parent) => parent.id,
     description: (parent) => parent.description,
@@ -35,7 +39,7 @@ const resolvers = {
 }
 
 const server = new GraphQLServer({
-  typeDefs,
+  typeDefs: './src/schema.graphql',
   resolvers
 })
 
